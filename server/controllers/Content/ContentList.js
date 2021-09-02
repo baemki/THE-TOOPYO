@@ -15,6 +15,7 @@ module.exports = {
                 LEFT JOIN users ON contents.userId = users.id
                 LEFT JOIN (SELECT contentId, COUNT(*) as count2 FROM agrees GROUP BY contentId) as agree_count on contents.id = agree_count.contentId
                 LEFT JOIN (SELECT contentId, COUNT(*) as count1 FROM disagrees GROUP BY contentId) as disagree_count on contents.id = disagree_count.contentId
+                ORDER BY contents.id DESC
                 `,
                 { type: QueryTypes.SELECT },
             );
@@ -67,25 +68,25 @@ module.exports = {
 
     // 게시물 생성입니다.
     createContent: async (req, res) => {
-        try {
-            const accessToken = req.cookies.accessToken;
-            const userInfo = await jwt.verify(accessToken, process.env.ACCESS_SECRET);
-            const { title, picture_1, picture_2, description, voting_deadline } = req.body;
-            if (title && picture_1 && picture_2 && description && voting_deadline) {
+        const accessToken = req.cookies.accessToken;
+        const userInfo = await jwt.verify(accessToken, process.env.ACCESS_SECRET);
+        const { title, description, voting_deadline, picture_1, picture_2 } = req.body;
+        if (title && description && voting_deadline) {
+            try {
                 const createContent = await content.create({
                     userId: userInfo.id,
                     title,
-                    picture_1,
-                    picture_2,
                     description,
                     voting_deadline,
+                    picture_1,
+                    picture_2,
                 });
                 res.status(201).json({ message: 'ok', contentId: createContent.id });
-            } else {
-                res.status(400).json({ message: 'please, rewrite' });
+            } catch (err) {
+                res.status(500).json({ message: 'server error' });
             }
-        } catch (err) {
-            res.status(500).json({ message: 'server error' });
+        } else {
+            res.status(400).json({ message: 'please, rewrite' });
         }
     },
 

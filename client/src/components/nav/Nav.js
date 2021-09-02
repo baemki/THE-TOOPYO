@@ -1,30 +1,11 @@
-import { useState } from 'react';
-import { Switch, Route, Redirect, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './Nav.css';
 import LoginButton from '../modals/LoginBtn';
 import SignUpButton from '../modals/SignUpBtn';
 import Sidebar from '../sidebar/SideBar';
 import SearchButton from '../search/SearchBtn';
-import axios from 'axios';
-import Mypage from '../../pages/mypage/Mypage';
-import Tab from '../tab/Tab';
 
-function Nav({ isLogin, loginHandler, contentList, getContentDetail }) {
-    //const [login, setLogin] = useState('로그인');
-
-    // const [currentTab, setCurrentTab] = useState(0);
-    // const tabMenu = [
-    //     { name: 'mypage', content: <MypageDetail /> },
-    //     { name: 'mycontent', content: <Mycontent /> },
-    // ];
-    // const selectMenuHandler = (index) => {
-    //     setCurrentTab(index);
-    // };
-
-    // const aaa () => {
-
-    // }
-
+function Nav({ isLogin, loginHandler, contentList, getContentDetail, handleLogout }) {
     return (
         <nav>
             <div className="navInner">
@@ -52,9 +33,11 @@ function Nav({ isLogin, loginHandler, contentList, getContentDetail }) {
                         </li>
                         <li>
                             {isLogin ? (
-                                <button className="navBtn" onClick={loginHandler}>
-                                    로그아웃
-                                </button>
+                                <Link to="/">
+                                    <button className="navBtn" onClick={handleLogout}>
+                                        로그아웃
+                                    </button>
+                                </Link>
                             ) : (
                                 <SignUpButton loginHandler={loginHandler} />
                             )}

@@ -3,7 +3,7 @@ import axios from 'axios';
 import './Mypage.css';
 import { useHistory } from 'react-router-dom';
 
-export default function MypageDetail({ userInfo, getUserInfo }) {
+export default function MypageDetail({ userInfo, setUserInfo }) {
     useEffect(() => {
         console.log('여기는 마이페이지디테일', userInfo);
     }, [userInfo]);
@@ -29,124 +29,152 @@ export default function MypageDetail({ userInfo, getUserInfo }) {
         setPatchInfo({ ...patchInfo, [e.target.name]: e.target.value });
     };
 
-    const patchRequestHandler = () => {
-        if (
-            patchInfo.nickName &&
-            patchInfo.profile_img &&
-            patchInfo.password &&
-            patchInfo.phoneNumber &&
-            userInfo.email
-        ) {
-            axios
+    const patchRequestHandler = async () => {
+        let image;
+        if (img) {
+            image = img.name;
+        } else {
+            image = userInfo.profile_img;
+        }
+        if (patchInfo.nickName && patchInfo.password && patchInfo.phoneNumber && userInfo.email) {
+            await axios
                 .patch(`http://localhost:80/user`, {
                     nickName: patchInfo.nickName,
                     email: userInfo.email,
                     password: patchInfo.password,
-                    profile_img: patchInfo.profile_img,
+                    profile_img: image,
                     phoneNumber: patchInfo.phoneNumber,
                 })
                 .then((res) => {
-                    history.push('/');
+                    setUserInfo({
+                        ...userInfo,
+                        nickName: patchInfo.nickName,
+                        email: userInfo.email,
+                        password: patchInfo.password,
+                        profile_img: image,
+                        phoneNumber: patchInfo.phoneNumber,
+                    });
+                    console.log(res);
+                    history.push('/mypage');
                 });
+            const formData = new FormData();
+            formData.append('file', img);
+            await axios.patch('http://localhost:80/upload', formData);
         }
     };
-    if (!userInfo) {
-        return 'dㅇㅇㅇㅇ';
-    }
 
     return (
         <>
             {isClick ? (
                 <form onSubmit={(e) => e.preventDefault()}>
-                    <h1 className="myHello">안녕하세요 {userInfo.nickName}님</h1>
+                    <h1 className="myHello">안녕하세요 {userInfo.nickName}님 🎈</h1>
                     <div className="myDetailContainer">
-                        <div className="pfArea">
-                            <a className="profile_img">
+                        <div className="pfAreaContainer">
+                            <div className="pfArea">
                                 <div className="label">프로필 사진</div>
-                                <input
-                                    name="profile_img"
-                                    className="avatar"
-                                    type="file"
-                                    onChange={(e) => fileEvent(e)}
-                                />
-                            </a>
-                            <div className="infoContainer">
-                                <div className="labelContainer">
-                                    <div className="label">이메일</div>
-                                    <div className="email">{userInfo.email}</div>
-                                </div>
-                                <div className="labelContainer">
-                                    <div className="label">비밀번호</div>
+                                <div className="profile">
+                                    <div className="circle">
+                                        <img
+                                            src={`/upload/${userInfo.profile_img}`}
+                                            alt={userInfo.nickName}
+                                            name="profile_img"
+                                            className="avatar"
+                                            type="file"></img>
+                                    </div>
+                                    <div className="actions">
+                                        <button className="editBtncon" type="submit" onClick={patchRequestHandler}>
+                                            저장
+                                        </button>
+                                    </div>
                                     <input
-                                        className="inputBox"
-                                        name="password"
-                                        type="password"
-                                        placeholder="비밀번호를 입력해주세요"
-                                        onChange={(e) => inputHandler(e)}
-                                        value={patchInfo.password}></input>
+                                        name="profile_img"
+                                        className="imgInputBtn"
+                                        type="file"
+                                        onChange={fileEvent}
+                                    />
+                                    <div className="infoContainer">
+                                        <div className="labelContainer">
+                                            <div className="label">이메일</div>
+                                            <div className="email">{userInfo.email}</div>
+                                        </div>
+                                        <div className="labelContainer">
+                                            <div className="label">비밀번호</div>
+                                            <input
+                                                className="inputBox"
+                                                name="password"
+                                                type="password"
+                                                placeholder="비밀번호를 입력해주세요"
+                                                onChange={(e) => inputHandler(e)}
+                                                value={patchInfo.password}></input>
+                                        </div>
+                                        <div className="labelContainer">
+                                            <div className="label">닉네임</div>
+                                            <input
+                                                className="inputBox"
+                                                name="nickName"
+                                                type="text"
+                                                maxLength="20"
+                                                placeholder="닉네임을 입력해주세요"
+                                                onChange={(e) => inputHandler(e)}
+                                                value={patchInfo.nickName}></input>
+                                        </div>
+                                        <div className="labelContainer">
+                                            <div className="label">전화번호</div>
+                                            <input
+                                                className="inputBox"
+                                                name="phoneNumber"
+                                                type="text"
+                                                maxLength="20"
+                                                placeholder="전화번호를 입력해주세요"
+                                                onChange={(e) => inputHandler(e)}
+                                                value={patchInfo.phoneNumber}></input>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="labelContainer">
-                                    <div className="label">닉네임</div>
-                                    <input
-                                        className="inputBox"
-                                        name="nickName"
-                                        type="text"
-                                        maxLength="20"
-                                        placeholder="닉네임을 입력해주세요"
-                                        onChange={(e) => inputHandler(e)}
-                                        value={patchInfo.nickName}></input>
-                                </div>
-                                <div className="labelContainer">
-                                    <div className="label">전화번호</div>
-                                    <input
-                                        className="inputBox"
-                                        name="phoneNumber"
-                                        type="text"
-                                        maxLength="20"
-                                        placeholder="전화번호를 입력해주세요"
-                                        onChange={(e) => inputHandler(e)}
-                                        value={patchInfo.phoneNumber}></input>
-                                </div>
-                                <input classname="editBtn" type="submit" value="저장" onClick={patchRequestHandler} />
                             </div>
                         </div>
                     </div>
                 </form>
             ) : (
-                <>
+                <div id="mypageDetailContainer">
+                    <h1 className="myHello">안녕하세요 {userInfo.nickName}님 🎈</h1>
                     <div className="myDetailContainer">
-                        <h1 className="myHello">안녕하세요 {userInfo.nickName}님</h1>
-                        <div className="pfArea">
-                            <a className="profile_img">
-                                <div className="label">프로필 사진</div>
-                                <img
-                                    src="/img/kakao.png"
-                                    alt={userInfo.nickName}
-                                    name="profile_img"
-                                    className="avatar"
-                                    type="file"
-                                />
-                            </a>
-                            <div className="infoContainer">
-                                <div className="labelContainer">
-                                    <div className="label">이메일</div>
-                                    <div className="user">{userInfo.email}</div>
+                        <div className="pfAreaContainer">
+                            <div className="pfArea">
+                                <div className="label">프로필</div>
+                                <div className="profile">
+                                    <div className="circle">
+                                        <img
+                                            src={`/upload/${userInfo.profile_img}`}
+                                            alt={userInfo.nickName}
+                                            name="profile_img"
+                                            className="avatar"
+                                            type="file"></img>
+                                    </div>
+                                    <div className="actions">
+                                        <button className="editBtncon" onClick={clickHandler}>
+                                            수정
+                                        </button>
+                                    </div>
+                                    <div className="infoContainer">
+                                        <div className="labelContainer">
+                                            <div className="label">이메일</div>
+                                            <div className="user">{userInfo.email}</div>
+                                        </div>
+                                        <div className="labelContainer">
+                                            <div className="label">닉네임</div>
+                                            <div className="user">{userInfo.nickName}</div>
+                                        </div>
+                                        <div className="labelContainer">
+                                            <div className="label">전화번호</div>
+                                            <div className="user">{userInfo.phoneNumber}</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="labelContainer">
-                                    <div className="label">닉네임</div>
-                                    <div className="user">{userInfo.nickName}</div>
-                                </div>
-                                <div className="labelContainer">
-                                    <div className="label">전화번호</div>
-                                    <div className="user">{userInfo.phoneNumber}</div>
-                                </div>
-                                <button classname="editBtn" onClick={clickHandler}>
-                                    수정
-                                </button>
                             </div>
                         </div>
                     </div>
-                </>
+                </div>
             )}
         </>
     );
